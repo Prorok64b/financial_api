@@ -13,4 +13,14 @@ Rails.application.routes.draw do
       sessions: 'users/sessions',
       registrations: 'users/registrations'
     }
+
+  namespace :v1 do
+    resource :account, only: [], controller: 'account' do
+      get :balance
+      post :deposit
+      post :withdraw
+      post :transfer
+      get :transactions
+    end
+  end
 end
