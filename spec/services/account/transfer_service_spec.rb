@@ -148,6 +148,7 @@ RSpec.describe Account::TransferService do
       it 'does not create partial transactions on insufficient funds' do
         initial_transaction_count = Transaction.count
 
+        # sender has only 100, so this should fail and create no transactions
         described_class.call(sender: sender, recipient_email: recipient.email, amount: 150.00)
 
         # Failed transfer creates no transactions
@@ -176,6 +177,25 @@ RSpec.describe Account::TransferService do
         # Both should still have their original balance since transfers are symmetric
         expect(user1.reload.balance).to eq(100.00)
         expect(user2.reload.balance).to eq(100.00)
+
+        # Check that transactions were created for both sides
+        user1_transactions = user1.transactions.order(created_at: :desc).limit(5)
+        user2_transactions = user2.transactions.order(created_at: :desc).limit(5)
+
+        expect(user1_transactions.where(transaction_type: 'transfer_out').count).to eq(5)
+        expect(user1_transactions.where(transaction_type: 'transfer_in').count).to eq(5)
+        expect(user2_transactions.where(transaction_type: 'transfer_out').count).to eq(5)
+        expect(user2_transactions.where(transaction_type: 'transfer_in').count).to eq(5)
+
+        # Verify all transactions have correct amounts
+        user1_transactions.each { |t| expect(t.amount).to eq(10.00) }
+        user2_transactions.each { |t| expect(t.amount).to eq(10.00) }
+
+        # Verify all transactions have correct counterparties
+        user1_transactions.where(transaction_type: 'transfer_out').each { |t| expect(t.counterparty).to eq(user2) }
+        user1_transactions.where(transaction_type: 'transfer_in').each { |t| expect(t.counterparty).to eq(user2) }
+        user2_transactions.where(transaction_type: 'transfer_out').each { |t| expect(t.counterparty).to eq(user1) }
+        user2_transactions.where(transaction_type: 'transfer_in').each { |t| expect(t.counterparty).to eq(user1) }
       end
     end
   end
