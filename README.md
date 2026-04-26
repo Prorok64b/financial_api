@@ -2,10 +2,40 @@
 
 A Rails API for managing user funds with deposit, withdrawal, and transfer functionality.
 
+## Table of Contents
+
+- [Ruby Version](#ruby-version)
+- [Setup](#setup)
+- [Running Tests](#running-tests)
+- [Seed Data](#seed-data)
+- [Testing Scripts](#testing-scripts)
+  - [Available Scripts](#available-scripts)
+  - [Quick Start](#quick-start)
+  - [Script Parameters](#script-parameters)
+  - [Environment Variables](#environment-variables)
+- [API Endpoints](#api-endpoints)
+  - [Authentication](#authentication)
+    - [Register a New User](#register-a-new-user)
+    - [Login](#login)
+  - [Account Endpoints](#account-endpoints)
+    - [Get Balance](#get-balance)
+    - [Deposit](#deposit)
+    - [Withdraw](#withdraw)
+    - [Transfer](#transfer)
+    - [Transaction History](#transaction-history)
+- [Complete Testing Script](#complete-testing-script)
+- [Error Handling](#error-handling)
+
+---
+
 ## Ruby Version
 
 - Ruby 3.4.1
 - Rails 8.0.5
+
+[Back to Table of Contents](#table-of-contents)
+
+---
 
 ## Setup
 
@@ -20,11 +50,19 @@ rails db:create db:migrate
 rails s
 ```
 
+[Back to Table of Contents](#table-of-contents)
+
+---
+
 ## Running Tests
 
 ```bash
 bundle exec rspec
 ```
+
+[Back to Table of Contents](#table-of-contents)
+
+---
 
 ## Seed Data
 
@@ -42,6 +80,8 @@ rails db:seed
 | bob@example.com | password123 | User with transaction history |
 | charlie@example.com | password123 | User with transaction history |
 | demo@example.com | demo1234 | Demo account for testing |
+
+[Back to Table of Contents](#table-of-contents)
 
 ---
 
@@ -144,6 +184,8 @@ export API_URL=http://localhost:4000
 ./bin/api/login.sh
 ```
 
+[Back to Table of Contents](#table-of-contents)
+
 ---
 
 ## API Endpoints
@@ -182,6 +224,8 @@ curl -X POST http://localhost:3000/users \
   }
 }
 ```
+
+[Back to Table of Contents](#table-of-contents)
 
 #### Login
 
@@ -223,8 +267,10 @@ The JWT token is returned in the `Authorization` header.
 TOKEN=$(curl -s -X POST http://localhost:3000/users/sign_in \
   -H "Content-Type: application/json" \
   -d '{"user":{"email":"user@example.com","password":"password123"}}' \
-  -i | grep -i "Authorization:" | awk '{print $2}' | tr -d '\r')
+  -i | grep -i "Authorization:" | awk '{print $3}' | tr -d '\r')
 ```
+
+[Back to Table of Contents](#table-of-contents)
 
 ---
 
@@ -236,7 +282,7 @@ Returns the current balance of the authenticated user.
 
 ```bash
 curl -X GET http://localhost:3000/v1/account/balance \
-  -H "Authorization: $TOKEN" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json"
 ```
 
@@ -255,6 +301,8 @@ curl -X GET http://localhost:3000/v1/account/balance \
 |-------|------|-------------|
 | balance | string | Current account balance (decimal format) |
 
+[Back to Table of Contents](#table-of-contents)
+
 ---
 
 #### Deposit
@@ -263,7 +311,7 @@ Adds funds to the authenticated user's account.
 
 ```bash
 curl -X POST http://localhost:3000/v1/account/deposit \
-  -H "Authorization: $TOKEN" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 100.50
@@ -298,6 +346,8 @@ curl -X POST http://localhost:3000/v1/account/deposit \
 }
 ```
 
+[Back to Table of Contents](#table-of-contents)
+
 ---
 
 #### Withdraw
@@ -306,7 +356,7 @@ Removes funds from the authenticated user's account.
 
 ```bash
 curl -X POST http://localhost:3000/v1/account/withdraw \
-  -H "Authorization: $TOKEN" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 50.00
@@ -350,6 +400,8 @@ curl -X POST http://localhost:3000/v1/account/withdraw \
 }
 ```
 
+[Back to Table of Contents](#table-of-contents)
+
 ---
 
 #### Transfer
@@ -358,7 +410,7 @@ Transfers funds from the authenticated user to another user.
 
 ```bash
 curl -X POST http://localhost:3000/v1/account/transfer \
-  -H "Authorization: $TOKEN" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 25.00,
@@ -422,6 +474,8 @@ curl -X POST http://localhost:3000/v1/account/transfer \
 }
 ```
 
+[Back to Table of Contents](#table-of-contents)
+
 ---
 
 #### Transaction History
@@ -430,7 +484,7 @@ Returns the transaction history for the authenticated user.
 
 ```bash
 curl -X GET http://localhost:3000/v1/account/transactions \
-  -H "Authorization: $TOKEN" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json"
 ```
 
@@ -483,6 +537,8 @@ curl -X GET http://localhost:3000/v1/account/transactions \
 | counterparty_email | string | (Optional) For transfers, the other party's email |
 | created_at | string | ISO 8601 timestamp of when transaction occurred |
 
+[Back to Table of Contents](#table-of-contents)
+
 ---
 
 ## Complete Testing Script
@@ -504,21 +560,21 @@ echo "=== Logging in ==="
 TOKEN=$(curl -s -X POST "$BASE_URL/users/sign_in" \
   -H "Content-Type: application/json" \
   -d '{"user":{"email":"test@example.com","password":"password123"}}' \
-  -i | grep -i "Authorization:" | awk '{print $2}' | tr -d '\r')
+  -i | grep -i "Authorization:" | awk '{print $3}' | tr -d '\r')
 echo "Token: $TOKEN"
 echo -e "\n"
 
 # 3. Check initial balance
 echo "=== Checking balance ==="
 curl -X GET "$BASE_URL/v1/account/balance" \
-  -H "Authorization: $TOKEN" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json"
 echo -e "\n"
 
 # 4. Deposit funds
 echo "=== Depositing 100.50 ==="
 curl -X POST "$BASE_URL/v1/account/deposit" \
-  -H "Authorization: $TOKEN" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"amount": 100.50}'
 echo -e "\n"
@@ -526,7 +582,7 @@ echo -e "\n"
 # 5. Withdraw funds
 echo "=== Withdrawing 25.00 ==="
 curl -X POST "$BASE_URL/v1/account/withdraw" \
-  -H "Authorization: $TOKEN" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"amount": 25.00}'
 echo -e "\n"
@@ -541,7 +597,7 @@ echo -e "\n"
 # 7. Transfer to another user
 echo "=== Transferring 10.00 to recipient ==="
 curl -X POST "$BASE_URL/v1/account/transfer" \
-  -H "Authorization: $TOKEN" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"amount": 10.00, "recipient_email": "recipient@example.com"}'
 echo -e "\n"
@@ -549,17 +605,19 @@ echo -e "\n"
 # 8. Check transaction history
 echo "=== Transaction history ==="
 curl -X GET "$BASE_URL/v1/account/transactions" \
-  -H "Authorization: $TOKEN" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json"
 echo -e "\n"
 
 # 9. Final balance
 echo "=== Final balance ==="
 curl -X GET "$BASE_URL/v1/account/balance" \
-  -H "Authorization: $TOKEN" \
+  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json"
 echo -e "\n"
 ```
+
+[Back to Table of Contents](#table-of-contents)
 
 ---
 
@@ -582,3 +640,5 @@ All error responses follow this format:
 | 401 | Unauthorized (missing or invalid token) |
 | 404 | Not Found (recipient not found) |
 | 422 | Unprocessable Entity (validation error) |
+
+[Back to Table of Contents](#table-of-contents)
