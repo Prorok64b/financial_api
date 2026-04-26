@@ -16,7 +16,7 @@ module Account
       return failure('Cannot transfer to yourself') if recipient.id == @sender.id
 
       ActiveRecord::Base.transaction(isolation: :repeatable_read) do
-        users = lock_users_in_order(@sender, recipient)
+        users = lock_parties(@sender, recipient)
         sender = users.find { |u| u.id == @sender.id }
         recipient = users.find { |u| u.id != @sender.id }
 
@@ -42,8 +42,8 @@ module Account
       Result.new(success?: false, error: error, data: { status: status })
     end
 
-    def lock_users_in_order(user1, user2)
-      User.where(id: [user1.id, user2.id]).order(:id).lock.to_a
+    def lock_parties(sender, recipient)
+      User.where(id: [sender.id, recipient.id]).lock.to_a
     end
 
     def transfer_funds(sender, recipient)
