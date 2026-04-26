@@ -44,7 +44,9 @@ RSpec.describe Transaction, type: :model do
         old_transaction = create(:transaction, user: user, created_at: 2.days.ago)
         new_transaction = create(:transaction, user: user, created_at: 1.day.ago)
 
-        expect(Transaction.recent_first).to eq([new_transaction, old_transaction])
+        recent_first = user.transactions.recent_first
+        expect(recent_first.first).to eq(new_transaction)
+        expect(recent_first.last).to eq(old_transaction)
       end
     end
   end

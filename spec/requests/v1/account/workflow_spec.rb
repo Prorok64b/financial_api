@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 RSpec.describe 'V1::Account Workflow', type: :request do
+  self.use_transactional_tests = false
+
   describe 'full workflow' do
     it 'performs a complete deposit, transfer, and withdraw flow' do
       sender = create(:user, balance: 0)

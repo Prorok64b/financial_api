@@ -3,7 +3,9 @@
 require 'rails_helper'
 
 RSpec.describe 'V1::Account#transfer', type: :request do
-  include_context 'authenticated user'
+  self.use_transactional_tests = false
+
+	include_context 'authenticated user'
 
   subject(:request) do
     post '/v1/account/transfer',

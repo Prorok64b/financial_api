@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 RSpec.describe 'V1::Account#withdraw', type: :request do
+  self.use_transactional_tests = false
+
   include_context 'authenticated user'
 
   subject(:request) { post '/v1/account/withdraw', params: { amount: amount }, headers: headers, as: :json }
