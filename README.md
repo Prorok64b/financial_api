@@ -26,6 +26,124 @@ rails s
 bundle exec rspec
 ```
 
+## Seed Data
+
+Load test users and sample transactions:
+
+```bash
+rails db:seed
+```
+
+**Seeded test users:**
+
+| Email | Password | Description |
+|-------|----------|-------------|
+| alice@example.com | password123 | User with transaction history |
+| bob@example.com | password123 | User with transaction history |
+| charlie@example.com | password123 | User with transaction history |
+| demo@example.com | demo1234 | Demo account for testing |
+
+---
+
+## Testing Scripts
+
+The `bin/api/` directory contains shell scripts for testing each API endpoint.
+
+### Available Scripts
+
+| Script | Description | Usage |
+|--------|-------------|-------|
+| `register.sh` | Register a new user | `./bin/api/register.sh [email] [password]` |
+| `login.sh` | Login and save token | `./bin/api/login.sh [email] [password]` |
+| `balance.sh` | Get current balance | `./bin/api/balance.sh` |
+| `deposit.sh` | Deposit funds | `./bin/api/deposit.sh [amount]` |
+| `withdraw.sh` | Withdraw funds | `./bin/api/withdraw.sh [amount]` |
+| `transfer.sh` | Transfer to another user | `./bin/api/transfer.sh [amount] [recipient_email]` |
+| `transactions.sh` | Get transaction history | `./bin/api/transactions.sh` |
+
+### Quick Start
+
+```bash
+# 1. Start the server
+rails s
+
+# 2. Login (uses demo@example.com by default)
+./bin/api/login.sh
+
+# 3. Check your balance
+./bin/api/balance.sh
+
+# 4. Make a deposit
+./bin/api/deposit.sh 100
+
+# 5. Make a withdrawal
+./bin/api/withdraw.sh 25
+
+# 6. Transfer to another user
+./bin/api/transfer.sh 10 alice@example.com
+
+# 7. View transaction history
+./bin/api/transactions.sh
+```
+
+### Script Parameters
+
+#### register.sh
+```bash
+./bin/api/register.sh [email] [password]
+
+# Examples:
+./bin/api/register.sh                           # Uses test@example.com / password123
+./bin/api/register.sh user@example.com secret   # Custom credentials
+```
+
+#### login.sh
+```bash
+./bin/api/login.sh [email] [password]
+
+# Examples:
+./bin/api/login.sh                              # Uses demo@example.com / demo1234
+./bin/api/login.sh alice@example.com password123
+```
+
+The token is automatically saved to `/tmp/financial_api_token` and used by other scripts.
+
+#### deposit.sh
+```bash
+./bin/api/deposit.sh [amount]
+
+# Examples:
+./bin/api/deposit.sh          # Deposits $100.00
+./bin/api/deposit.sh 250.50   # Deposits $250.50
+```
+
+#### withdraw.sh
+```bash
+./bin/api/withdraw.sh [amount]
+
+# Examples:
+./bin/api/withdraw.sh         # Withdraws $50.00
+./bin/api/withdraw.sh 75.25   # Withdraws $75.25
+```
+
+#### transfer.sh
+```bash
+./bin/api/transfer.sh [amount] [recipient_email]
+
+# Examples:
+./bin/api/transfer.sh                              # Transfers $25.00 to alice@example.com
+./bin/api/transfer.sh 100 bob@example.com          # Transfers $100.00 to bob@example.com
+```
+
+### Environment Variables
+
+Set `API_URL` to use a different server:
+
+```bash
+export API_URL=http://localhost:4000
+./bin/api/login.sh
+```
+
 ---
 
 ## API Endpoints
