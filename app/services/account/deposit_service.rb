@@ -8,7 +8,7 @@ module Account
     end
 
     def call
-      return failure('Amount must be greater than 0') if @amount <= 0
+      return failure("Amount must be greater than 0") if @amount <= 0
 
       ActiveRecord::Base.transaction(isolation: :repeatable_read) do
         @user.lock!
@@ -16,7 +16,7 @@ module Account
         @user.update!(balance: new_balance)
         @user.transactions.create!(
           amount: @amount,
-          transaction_type: 'deposit',
+          transaction_type: "deposit",
           balance_after: new_balance
         )
       end

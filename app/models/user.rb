@@ -17,11 +17,11 @@ class User < ApplicationRecord
     return if balance_before_type_cast.blank?
 
     balance_string = balance_before_type_cast.to_s
-    return unless balance_string.include?('.')
+    return unless balance_string.include?(".")
 
-    decimal_part = balance_string.split('.').last
+    decimal_part = balance_string.split(".").last
     if decimal_part.length > 2
-      errors.add(:balance, 'must have at most 2 decimal places')
+      errors.add(:balance, "must have at most 2 decimal places")
     end
   end
 end

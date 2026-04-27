@@ -4,7 +4,7 @@ class Users::SessionsController < Devise::SessionsController
   respond_to :json
 
   def destroy
-    super { return render json: { message: 'Logged out' }, status: :ok }
+    super { return render json: { message: "Logged out" }, status: :ok }
   end
 
   private
@@ -12,11 +12,11 @@ class Users::SessionsController < Devise::SessionsController
   def respond_with(resource, _opts = {})
     if resource.persisted?
       render json: {
-        message: 'Logged in successfully.',
+        message: "Logged in successfully.",
         user: user_response(resource)
       }, status: :ok
     else
-      render json: { error: 'Invalid Email or password.' }, status: :unauthorized
+      render json: { error: "Invalid Email or password." }, status: :unauthorized
     end
   end
 
@@ -25,6 +25,6 @@ class Users::SessionsController < Devise::SessionsController
   end
 
   def respond_to_on_destroy(_resource = nil)
-    render json: { message: 'Logged out' }, status: :ok
+    render json: { message: "Logged out" }, status: :ok
   end
 end

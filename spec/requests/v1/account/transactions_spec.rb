@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe 'V1::Account#transactions', type: :request do
   self.use_transactional_tests = false
 
-	include_context 'authenticated user'
+  include_context 'authenticated user'
 
   subject(:request) { get '/v1/account/transactions', headers: headers, as: :json }
 

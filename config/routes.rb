@@ -10,12 +10,12 @@ Rails.application.routes.draw do
 
   devise_for :users,
     controllers: {
-      sessions: 'users/sessions',
-      registrations: 'users/registrations'
+      sessions: "users/sessions",
+      registrations: "users/registrations"
     }
 
   namespace :v1 do
-    resource :account, only: [], controller: 'account' do
+    resource :account, only: [], controller: "account" do
       get :balance
       post :deposit
       post :withdraw

@@ -4,7 +4,7 @@ class Transaction < ApplicationRecord
   TYPES = %w[deposit withdrawal transfer_in transfer_out].freeze
 
   belongs_to :user
-  belongs_to :counterparty, class_name: 'User', optional: true
+  belongs_to :counterparty, class_name: "User", optional: true
 
   validates :amount, presence: true, numericality: { greater_than: 0 }
   validates :transaction_type, presence: true, inclusion: { in: TYPES }

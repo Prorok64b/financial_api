@@ -9,18 +9,18 @@ module Account
     end
 
     def call
-      return failure('Amount must be greater than 0') if @amount <= 0
+      return failure("Amount must be greater than 0") if @amount <= 0
 
       recipient = User.find_by(email: @recipient_email)
-      return failure('Recipient not found', :not_found) unless recipient
-      return failure('Cannot transfer to yourself') if recipient.id == @sender.id
+      return failure("Recipient not found", :not_found) unless recipient
+      return failure("Cannot transfer to yourself") if recipient.id == @sender.id
 
       ActiveRecord::Base.transaction(isolation: :repeatable_read) do
         users = lock_parties(@sender, recipient)
         sender = users.find { |u| u.id == @sender.id }
         recipient = users.find { |u| u.id != @sender.id }
 
-        return failure('Insufficient funds') if sender.balance < @amount
+        return failure("Insufficient funds") if sender.balance < @amount
 
         transfer_funds(sender, recipient)
       end
@@ -43,7 +43,7 @@ module Account
     end
 
     def lock_parties(sender, recipient)
-      User.where(id: [sender.id, recipient.id]).lock.to_a
+      User.where(id: [ sender.id, recipient.id ]).lock.to_a
     end
 
     def transfer_funds(sender, recipient)
@@ -53,7 +53,7 @@ module Account
       sender.update!(balance: sender_new_balance)
       sender.transactions.create!(
         amount: @amount,
-        transaction_type: 'transfer_out',
+        transaction_type: "transfer_out",
         balance_after: sender_new_balance,
         counterparty: recipient
       )
@@ -61,7 +61,7 @@ module Account
       recipient.update!(balance: recipient_new_balance)
       recipient.transactions.create!(
         amount: @amount,
-        transaction_type: 'transfer_in',
+        transaction_type: "transfer_in",
         balance_after: recipient_new_balance,
         counterparty: sender
       )
