@@ -44,10 +44,10 @@ A Rails API for managing user funds with deposit, withdrawal, and transfer funct
 bundle install
 
 # Setup database
-rails db:create db:migrate
+bin/rails db:create db:migrate
 
 # Run the server
-rails s
+bin/rails s
 ```
 
 [Back to Table of Contents](#table-of-contents)
@@ -69,7 +69,7 @@ bundle exec rspec
 Load test users and sample transactions:
 
 ```bash
-rails db:seed
+bin/rails db:seed
 ```
 
 **Seeded test users:**
@@ -105,7 +105,7 @@ The `bin/api/` directory contains shell scripts for testing each API endpoint.
 
 ```bash
 # 1. Start the server
-rails s
+bin/rails s
 
 # 2. Login (uses demo@example.com by default)
 ./bin/api/login.sh
