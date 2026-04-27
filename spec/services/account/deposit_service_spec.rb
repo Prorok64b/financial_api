@@ -80,6 +80,34 @@ RSpec.describe Account::DepositService do
       end
     end
 
+    context 'when deposit would exceed balance limit' do
+      let(:user) { create(:user, balance: 999_000.00) }
+
+      it 'fails when deposit would exceed 1 million limit' do
+        result = described_class.call(user: user, amount: 1_001.00)
+        expect(result).to be_failure
+        expect(result.error).to include('Balance must be less than 1000000')
+      end
+
+      it 'does not change the balance when limit exceeded' do
+        expect {
+          described_class.call(user: user, amount: 1_001.00)
+        }.not_to change { user.reload.balance }
+      end
+
+      it 'does not create a transaction when limit exceeded' do
+        expect {
+          described_class.call(user: user, amount: 1_001.00)
+        }.not_to change { user.transactions.count }
+      end
+
+      it 'succeeds when deposit stays within limit' do
+        result = described_class.call(user: user, amount: 999.00)
+        expect(result).to be_success
+        expect(user.reload.balance).to eq(999_999.00)
+      end
+    end
+
     context 'with concurrent deposits' do
       it 'handles concurrent deposits correctly' do
         user = create(:user, balance: 0)

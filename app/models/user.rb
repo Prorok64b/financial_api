@@ -8,5 +8,5 @@ class User < ApplicationRecord
 
   has_many :transactions, dependent: :destroy
 
-  validates :balance, numericality: { greater_than_or_equal_to: 0 }
+  validates :balance, numericality: { greater_than_or_equal_to: 0, less_than: 1_000_000 }
 end

@@ -25,6 +25,12 @@ RSpec.describe User, type: :model do
       expect(user).not_to be_valid
       expect(user.errors[:balance]).to include('must be greater than or equal to 0')
     end
+
+    it 'is invalid with a balance exceeding the limit' do
+      user = build(:user, balance: 1_000_000)
+      expect(user).not_to be_valid
+      expect(user.errors[:balance]).to include('must be less than 1000000')
+    end
   end
 
   describe 'balance precision' do
