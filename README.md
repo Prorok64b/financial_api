@@ -219,8 +219,9 @@ curl -X POST http://localhost:3000/users \
 {
   "message": "Signed up successfully.",
   "user": {
-    "id": 1,
-    "email": "user@example.com"
+    "email": "user@example.com",
+    "created_at": "2026-04-27T21:09:05.350Z",
+    "updated_at": "2026-04-27T21:09:05.350Z"
   }
 }
 ```
@@ -255,8 +256,9 @@ The JWT token is returned in the `Authorization` header.
 {
   "message": "Logged in successfully.",
   "user": {
-    "id": 1,
-    "email": "user@example.com"
+    "email": "user@example.com",
+    "created_at": "2026-04-27T21:09:05.350Z",
+    "updated_at": "2026-04-27T21:09:05.350Z"
   }
 }
 ```
