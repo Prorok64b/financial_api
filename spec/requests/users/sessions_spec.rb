@@ -20,7 +20,7 @@ RSpec.describe 'Users::Sessions', type: :request do
       it 'returns success message' do
         request
 
-        expect(json_response['message']).to eq('Logged in')
+        expect(json_response['message']).to eq('Logged in successfully.')
       end
 
       it 'returns user data' do
