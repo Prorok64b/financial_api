@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe 'V1::Account#transfer', type: :request do
   self.use_transactional_tests = false
 
-	include_context 'authenticated user'
+  include_context 'authenticated user'
 
   subject(:request) do
     post '/v1/account/transfer',
@@ -105,6 +105,37 @@ RSpec.describe 'V1::Account#transfer', type: :request do
 
       it 'does not change recipient balance' do
         expect { request }.not_to change { recipient.reload.balance }
+      end
+    end
+
+    context 'when amount has more than 2 decimal places' do
+      let(:amount) { 10.999 }
+
+      it 'returns error' do
+        request
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(json_response['error']).to include('must have at most 2 decimal places')
+      end
+
+      it 'does not change sender balance' do
+        expect { request }.not_to change { user.reload.balance }
+      end
+
+      it 'does not change recipient balance' do
+        expect { request }.not_to change { recipient.reload.balance }
+      end
+    end
+
+    context 'when amount has exactly 2 decimal places' do
+      let(:amount) { 10.99 }
+
+      it 'succeeds' do
+        request
+
+        expect(response).to have_http_status(:ok)
+        expect(user.reload.balance).to eq(89.01)
+        expect(recipient.reload.balance).to eq(60.99)
       end
     end
   end

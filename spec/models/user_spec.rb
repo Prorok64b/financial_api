@@ -31,13 +31,40 @@ RSpec.describe User, type: :model do
       expect(user).not_to be_valid
       expect(user.errors[:balance]).to include('must be less than 1000000')
     end
+
+    it 'is valid with balance having 2 decimal places' do
+      user = build(:user, balance: BigDecimal('100.99'))
+      expect(user).to be_valid
+    end
+
+    it 'is valid with balance having 1 decimal place' do
+      user = build(:user, balance: BigDecimal('100.5'))
+      expect(user).to be_valid
+    end
+
+    it 'is valid with balance having no decimal places' do
+      user = build(:user, balance: BigDecimal('100'))
+      expect(user).to be_valid
+    end
+
+    it 'is invalid with balance having more than 2 decimal places' do
+      user = build(:user, balance: BigDecimal('100.999'))
+      expect(user).not_to be_valid
+      expect(user.errors[:balance]).to include('must have at most 2 decimal places')
+    end
+
+    it 'is invalid with balance having 3 decimal places' do
+      user = build(:user, balance: BigDecimal('50.123'))
+      expect(user).not_to be_valid
+      expect(user.errors[:balance]).to include('must have at most 2 decimal places')
+    end
   end
 
   describe 'balance precision' do
-    it 'stores balance with 2 decimal places' do
-      user = create(:user, balance: 100.999)
+    it 'stores balance with exact 2 decimal places' do
+      user = create(:user, balance: BigDecimal('100.55'))
       user.reload
-      expect(user.balance).to eq(101.00)
+      expect(user.balance).to eq(BigDecimal('100.55'))
     end
   end
 end
