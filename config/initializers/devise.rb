@@ -9,8 +9,13 @@
 # Use this hook to configure devise mailer, warden hooks and so forth.
 # Many of these configuration options can be set straight in your model.
 Devise.setup do |config|
-	config.jwt do |jwt|
-    jwt.secret = Rails.application.credentials.devise_jwt_secret_key!
+  config.jwt do |jwt|
+    if Rails.env.production?
+      jwt.secret = Rails.application.credentials.devise_jwt_secret_key!
+    else
+      jwt.secret = 'dev-secret-key'
+    end
+
     jwt.dispatch_requests = [
       ['POST', %r{^/users/sign_in$}]
     ]
