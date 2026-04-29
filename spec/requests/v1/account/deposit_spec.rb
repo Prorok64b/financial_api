@@ -72,15 +72,28 @@ RSpec.describe 'V1::Account#deposit', type: :request do
         let(:user) { create(:user, balance: 999_000.00) }
         let(:amount) { 1_001.00 }
 
-        it 'returns error' do
+        it 'returns error with helpful message' do
           request
 
           expect(response).to have_http_status(:unprocessable_entity)
-          expect(json_response['error']).to include('Balance must be less than 1000000')
+          expect(json_response['error']).to include('Current balance is 999000.0')
+          expect(json_response['error']).to include('maximum deposit amount is 999.99')
         end
 
         it 'does not change balance' do
           expect { request }.not_to change { user.reload.balance }
+        end
+      end
+
+      context 'when deposit would exactly reach the limit' do
+        let(:user) { create(:user, balance: 999_000.00) }
+        let(:amount) { 999.99 }
+
+        it 'succeeds' do
+          request
+
+          expect(response).to have_http_status(:ok)
+          expect(user.reload.balance).to eq(999_999.99)
         end
       end
 

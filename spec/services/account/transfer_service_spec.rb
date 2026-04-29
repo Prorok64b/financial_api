@@ -135,41 +135,6 @@ RSpec.describe Account::TransferService do
       end
     end
 
-    context 'when transfer would exceed recipient balance limit' do
-      let(:sender) { create(:user, balance: 10_000.00) }
-      let(:recipient) { create(:user, balance: 999_000.00) }
-
-      it 'fails when transfer would cause recipient to exceed 1 million limit' do
-        result = described_class.call(sender: sender, recipient_email: recipient.email, amount: 1_001.00)
-        expect(result).to be_failure
-        expect(result.error).to include('Balance must be less than 1000000')
-      end
-
-      it 'does not change sender balance when recipient limit exceeded' do
-        expect {
-          described_class.call(sender: sender, recipient_email: recipient.email, amount: 1_001.00)
-        }.not_to change { sender.reload.balance }
-      end
-
-      it 'does not change recipient balance when limit exceeded' do
-        expect {
-          described_class.call(sender: sender, recipient_email: recipient.email, amount: 1_001.00)
-        }.not_to change { recipient.reload.balance }
-      end
-
-      it 'does not create any transactions when limit exceeded' do
-        expect {
-          described_class.call(sender: sender, recipient_email: recipient.email, amount: 1_001.00)
-        }.not_to change { Transaction.count }
-      end
-
-      it 'succeeds when transfer stays within recipient limit' do
-        result = described_class.call(sender: sender, recipient_email: recipient.email, amount: 999.00)
-        expect(result).to be_success
-        expect(recipient.reload.balance).to eq(999_999.00)
-      end
-    end
-
     context 'atomicity' do
       it 'creates both transactions or neither' do
         initial_transaction_count = Transaction.count

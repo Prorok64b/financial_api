@@ -29,7 +29,20 @@ RSpec.describe User, type: :model do
     it 'is invalid with a balance exceeding the limit' do
       user = build(:user, balance: 1_000_000)
       expect(user).not_to be_valid
-      expect(user.errors[:balance]).to include('must be less than 1000000')
+      expect(user.errors[:balance].first).to include('limit exceeded')
+    end
+
+    it 'is valid with balance at maximum allowed value' do
+      user = build(:user, balance: BigDecimal('999999.99'))
+      expect(user).to be_valid
+    end
+
+    it 'provides helpful error message when balance limit exceeded on update' do
+      user = create(:user, balance: 999_000.00)
+      user.balance = 1_000_001.00
+      expect(user).not_to be_valid
+      expect(user.errors[:balance].first).to include('Current balance is 999000.0')
+      expect(user.errors[:balance].first).to include('maximum deposit amount is 999.99')
     end
 
     it 'is valid with balance having 2 decimal places' do

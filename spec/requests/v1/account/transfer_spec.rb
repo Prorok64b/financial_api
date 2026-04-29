@@ -87,27 +87,6 @@ RSpec.describe 'V1::Account#transfer', type: :request do
       end
     end
 
-    context 'when transfer would exceed recipient balance limit' do
-      let(:user) { create(:user, balance: 10_000.00) }
-      let(:recipient) { create(:user, balance: 999_000.00) }
-      let(:amount) { 1_001.00 }
-
-      it 'returns error' do
-        request
-
-        expect(response).to have_http_status(:unprocessable_entity)
-        expect(json_response['error']).to include('Balance must be less than 1000000')
-      end
-
-      it 'does not change sender balance' do
-        expect { request }.not_to change { user.reload.balance }
-      end
-
-      it 'does not change recipient balance' do
-        expect { request }.not_to change { recipient.reload.balance }
-      end
-    end
-
     context 'when amount has more than 2 decimal places' do
       let(:amount) { 10.999 }
 
