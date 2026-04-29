@@ -75,6 +75,22 @@ RSpec.describe 'V1::Account#withdraw', type: :request do
         end
       end
 
+      context 'when amount exceeds maximum withdrawal limit' do
+        let(:user) { create(:user, balance: 2_000_000.00) }
+        let(:amount) { 1_000_000.01 }
+
+        it 'returns error' do
+          request
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(json_response['error']).to eq('Maximum withdrawal amount is 1000000')
+        end
+
+        it 'does not change balance' do
+          expect { request }.not_to change { user.reload.balance }
+        end
+      end
+
       context 'when amount has more than 2 decimal places' do
         let(:amount) { 10.999 }
 

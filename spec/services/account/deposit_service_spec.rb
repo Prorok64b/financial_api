@@ -80,32 +80,36 @@ RSpec.describe Account::DepositService do
       end
     end
 
-    context 'when deposit would exceed balance limit' do
-      let(:user) { create(:user, balance: 999_000.00) }
-
-      it 'fails with helpful error message' do
-        result = described_class.call(user: user, amount: 1_001.00)
+    context 'when deposit amount exceeds maximum limit' do
+      it 'fails with error message' do
+        result = described_class.call(user: user, amount: 1_000_001.00)
         expect(result).to be_failure
-        expect(result.error).to include('Current balance is 999000.0')
-        expect(result.error).to include('maximum deposit amount is 999.99')
+        expect(result.error).to eq('Maximum deposit amount is 1000000')
       end
 
       it 'does not change the balance when limit exceeded' do
         expect {
-          described_class.call(user: user, amount: 1_001.00)
+          described_class.call(user: user, amount: 1_000_001.00)
         }.not_to change { user.reload.balance }
       end
 
       it 'does not create a transaction when limit exceeded' do
         expect {
-          described_class.call(user: user, amount: 1_001.00)
+          described_class.call(user: user, amount: 1_000_001.00)
         }.not_to change { user.transactions.count }
       end
 
-      it 'succeeds when deposit stays within limit' do
-        result = described_class.call(user: user, amount: 999.99)
+      it 'succeeds at maximum allowed amount' do
+        result = described_class.call(user: user, amount: 1_000_000.00)
         expect(result).to be_success
-        expect(user.reload.balance).to eq(999_999.99)
+        expect(user.reload.balance).to eq(1_000_100.00)
+      end
+
+      it 'allows balance to exceed limit through deposits' do
+        user.update!(balance: 999_000.00)
+        result = described_class.call(user: user, amount: 500_000.00)
+        expect(result).to be_success
+        expect(user.reload.balance).to eq(1_499_000.00)
       end
     end
 

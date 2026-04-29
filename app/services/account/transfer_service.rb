@@ -2,6 +2,8 @@
 
 module Account
   class TransferService < ApplicationService
+    LIMIT = 1_000_000
+
     def initialize(sender:, recipient_email:, amount:)
       @sender = sender
       @recipient_email = recipient_email
@@ -9,7 +11,10 @@ module Account
     end
 
     def call
+      # we need this quick check, to avoid placing transaction and aquiring a lock,
+      # in case we already know that amount is less then zero, at the very beginning
       return failure("Amount must be greater than 0") if @amount <= 0
+      return failure("Maximum transfer amount is #{LIMIT}") if @amount > LIMIT
 
       recipient = User.find_by(email: @recipient_email)
       return failure("Recipient not found", :not_found) unless recipient

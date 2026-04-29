@@ -68,16 +68,14 @@ RSpec.describe 'V1::Account#deposit', type: :request do
         end
       end
 
-      context 'when deposit would exceed balance limit' do
-        let(:user) { create(:user, balance: 999_000.00) }
-        let(:amount) { 1_001.00 }
+      context 'when deposit amount exceeds maximum limit' do
+        let(:amount) { 1_000_001.00 }
 
-        it 'returns error with helpful message' do
+        it 'returns error with message' do
           request
 
           expect(response).to have_http_status(:unprocessable_entity)
-          expect(json_response['error']).to include('Current balance is 999000.0')
-          expect(json_response['error']).to include('maximum deposit amount is 999.99')
+          expect(json_response['error']).to eq('Maximum deposit amount is 1000000')
         end
 
         it 'does not change balance' do
@@ -85,15 +83,26 @@ RSpec.describe 'V1::Account#deposit', type: :request do
         end
       end
 
-      context 'when deposit would exactly reach the limit' do
-        let(:user) { create(:user, balance: 999_000.00) }
-        let(:amount) { 999.99 }
+      context 'when deposit is at maximum allowed amount' do
+        let(:amount) { 1_000_000.00 }
 
         it 'succeeds' do
           request
 
           expect(response).to have_http_status(:ok)
-          expect(user.reload.balance).to eq(999_999.99)
+          expect(user.reload.balance).to eq(1_000_100.00)
+        end
+      end
+
+      context 'when deposit would push balance over 1 million' do
+        let(:user) { create(:user, balance: 900_000.00) }
+        let(:amount) { 500_000.00 }
+
+        it 'succeeds because only deposit amount is limited' do
+          request
+
+          expect(response).to have_http_status(:ok)
+          expect(user.reload.balance).to eq(1_400_000.00)
         end
       end
 

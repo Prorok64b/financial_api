@@ -87,6 +87,37 @@ RSpec.describe 'V1::Account#transfer', type: :request do
       end
     end
 
+    context 'when transfer amount exceeds maximum limit' do
+      let(:user) { create(:user, balance: 2_000_000.00) }
+      let(:amount) { 1_000_001.00 }
+
+      it 'returns error with message' do
+        request
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(json_response['error']).to eq('Maximum transfer amount is 1000000')
+      end
+
+      it 'does not change sender balance' do
+        expect { request }.not_to change { user.reload.balance }
+      end
+
+      it 'does not change recipient balance' do
+        expect { request }.not_to change { recipient.reload.balance }
+      end
+
+      it 'succeeds at maximum allowed amount' do
+        user.update!(balance: 1_000_000.00)
+        post '/v1/account/transfer',
+             params: { amount: 1_000_000.00, recipient_email: recipient_email },
+             headers: headers,
+             as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(user.reload.balance).to eq(0)
+      end
+    end
+
     context 'when amount has more than 2 decimal places' do
       let(:amount) { 10.999 }
 

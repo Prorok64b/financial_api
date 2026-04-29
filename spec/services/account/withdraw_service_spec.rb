@@ -99,6 +99,28 @@ RSpec.describe Account::WithdrawService do
       end
     end
 
+    context 'when amount exceeds maximum withdrawal limit' do
+      let(:user) { create(:user, balance: 2_000_000.00) }
+
+      it 'fails with error message' do
+        result = described_class.call(user: user, amount: 1_000_001.00)
+        expect(result).to be_failure
+        expect(result.error).to eq('Maximum withdrawal amount is 1000000')
+      end
+
+      it 'does not change balance' do
+        expect {
+          described_class.call(user: user, amount: 1_000_001.00)
+        }.not_to change { user.reload.balance }
+      end
+
+      it 'succeeds at maximum allowed amount' do
+        result = described_class.call(user: user, amount: 1_000_000)
+        expect(result).to be_success
+        expect(user.reload.balance).to eq(1_000_000)
+      end
+    end
+
     context 'with concurrent withdrawals' do
       it 'prevents overdraft with concurrent withdrawals' do
         user = create(:user, balance: 100.00)

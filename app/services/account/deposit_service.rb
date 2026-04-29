@@ -2,6 +2,8 @@
 
 module Account
   class DepositService < ApplicationService
+    LIMIT = 1_000_000
+
     def initialize(user:, amount:)
       @user = user
       @amount = BigDecimal(amount.to_s)
@@ -9,10 +11,13 @@ module Account
 
     def call
       return failure("Amount must be greater than 0") if @amount <= 0
+      return failure("Maximum deposit amount is #{LIMIT}") if @amount > LIMIT
 
       ActiveRecord::Base.transaction(isolation: :repeatable_read) do
         @user.lock!
+
         new_balance = @user.balance + @amount
+
         @user.update!(balance: new_balance)
         @user.transactions.create!(
           amount: @amount,

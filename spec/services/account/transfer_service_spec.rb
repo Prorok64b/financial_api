@@ -135,6 +135,35 @@ RSpec.describe Account::TransferService do
       end
     end
 
+    context 'when transfer amount exceeds maximum limit' do
+      let(:sender) { create(:user, balance: 2_000_000.00) }
+
+      it 'fails with error message' do
+        result = described_class.call(sender: sender, recipient_email: recipient.email, amount: 1_000_001.00)
+        expect(result).to be_failure
+        expect(result.error).to eq('Maximum transfer amount is 1000000')
+      end
+
+      it 'does not change sender balance' do
+        expect {
+          described_class.call(sender: sender, recipient_email: recipient.email, amount: 1_000_001.00)
+        }.not_to change { sender.reload.balance }
+      end
+
+      it 'does not change recipient balance' do
+        expect {
+          described_class.call(sender: sender, recipient_email: recipient.email, amount: 1_000_001.00)
+        }.not_to change { recipient.reload.balance }
+      end
+
+      it 'succeeds at maximum allowed amount' do
+        sender.update!(balance: 1_000_000.00)
+        result = described_class.call(sender: sender, recipient_email: recipient.email, amount: 1_000_000)
+        expect(result).to be_success
+        expect(sender.reload.balance).to eq(0)
+      end
+    end
+
     context 'atomicity' do
       it 'creates both transactions or neither' do
         initial_transaction_count = Transaction.count
