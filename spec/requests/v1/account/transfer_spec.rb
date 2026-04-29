@@ -9,16 +9,27 @@ RSpec.describe 'V1::Account#transfer', type: :request do
 
   subject(:request) do
     post '/v1/account/transfer',
-         params: { amount: amount, recipient_email: recipient_email },
+         params: params,
          headers: headers,
          as: :json
   end
 
+  let(:params) { { amount: amount, recipient_email: recipient_email } }
   let(:recipient) { create(:user, balance: 50.00) }
   let(:recipient_email) { recipient.email }
   let(:amount) { 30.00 }
 
   context 'when authenticated' do
+    context 'with empty params' do
+      let(:params) { {} }
+
+      it 'returns error' do
+        request
+
+        expect(response).to have_http_status(:bad_request)
+      end
+    end
+
     context 'with valid transfer' do
       it 'returns success' do
         request

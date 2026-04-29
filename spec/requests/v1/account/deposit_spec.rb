@@ -7,11 +7,22 @@ RSpec.describe 'V1::Account#deposit', type: :request do
 
   include_context 'authenticated user'
 
-  subject(:request) { post '/v1/account/deposit', params: { amount: amount }, headers: headers, as: :json }
+  subject(:request) { post '/v1/account/deposit', params: params, headers: headers, as: :json }
 
+  let(:params) { { amount: amount } }
   let(:amount) { 50.00 }
 
   context 'when authenticated' do
+    context 'with empty params' do
+      let(:params) { {} }
+
+      it 'returns error' do
+        request
+
+        expect(response).to have_http_status(:bad_request)
+      end
+    end
+
     context 'with valid amount' do
       it 'returns success' do
         request

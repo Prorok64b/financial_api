@@ -9,7 +9,9 @@ module V1
     end
 
     def deposit
-      result = Account::DepositService.call(user: current_user, amount: params[:amount])
+      amount = params.require(:amount)
+
+      result = Account::DepositService.call(user: current_user, amount: amount)
 
       if result.success?
         @balance = result.data[:balance]
@@ -20,7 +22,9 @@ module V1
     end
 
     def withdraw
-      result = Account::WithdrawService.call(user: current_user, amount: params[:amount])
+      amount = params.require(:amount)
+
+      result = Account::WithdrawService.call(user: current_user, amount: amount)
 
       if result.success?
         @balance = result.data[:balance]
@@ -31,10 +35,13 @@ module V1
     end
 
     def transfer
+      amount = params.require(:amount)
+      recipient_email = params.require(:recipient_email)
+
       result = Account::TransferService.call(
         sender: current_user,
-        recipient_email: params[:recipient_email],
-        amount: params[:amount]
+        recipient_email: recipient_email,
+        amount: amount
       )
 
       if result.success?
