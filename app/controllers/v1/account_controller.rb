@@ -9,9 +9,11 @@ module V1
     end
 
     def deposit
-      amount = params.require(:amount)
+      permitted = params.permit(:amount).to_h
+      errors = contract_errors(V1::Account::DepositContract, permitted)
+      return render_errors(errors) if errors.any?
 
-      result = Account::DepositService.call(user: current_user, amount: amount)
+      result = ::Account::DepositService.call(user: current_user, amount: permitted[:amount])
 
       if result.success?
         @balance = result.data[:balance]
@@ -22,9 +24,11 @@ module V1
     end
 
     def withdraw
-      amount = params.require(:amount)
+      permitted = params.permit(:amount).to_h
+      errors = contract_errors(V1::Account::WithdrawContract, permitted)
+      return render_errors(errors) if errors.any?
 
-      result = Account::WithdrawService.call(user: current_user, amount: amount)
+      result = ::Account::WithdrawService.call(user: current_user, amount: permitted[:amount])
 
       if result.success?
         @balance = result.data[:balance]
@@ -35,13 +39,14 @@ module V1
     end
 
     def transfer
-      amount = params.require(:amount)
-      recipient_email = params.require(:recipient_email)
+      permitted = params.permit(:amount, :recipient_email).to_h
+      errors = contract_errors(V1::Account::TransferContract, permitted)
+      return render_errors(errors) if errors.any?
 
-      result = Account::TransferService.call(
+      result = ::Account::TransferService.call(
         sender: current_user,
-        recipient_email: recipient_email,
-        amount: amount
+        recipient_email: permitted[:recipient_email],
+        amount: permitted[:amount]
       )
 
       if result.success?
@@ -57,6 +62,17 @@ module V1
 
     def transactions
       @transactions = current_user.transactions.recent_first
+    end
+
+    private
+
+    def contract_errors(contract_class, permitted_params)
+      contract_class.new.call(permitted_params).errors.to_h
+    end
+
+    def render_errors(errors)
+      @error = errors
+      render :error, status: :bad_request
     end
   end
 end

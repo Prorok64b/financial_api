@@ -50,6 +50,17 @@ RSpec.describe 'V1::Account#deposit', type: :request do
           expect(user.reload.balance).to eq(125.75)
         end
       end
+
+      context 'with 1 decimal place amount' do
+        let(:amount) { 25.5 }
+
+        it 'succeeds' do
+          request
+
+          expect(response).to have_http_status(:ok)
+          expect(user.reload.balance).to eq(125.5)
+        end
+      end
     end
 
     context 'with invalid amount' do
@@ -123,8 +134,8 @@ RSpec.describe 'V1::Account#deposit', type: :request do
         it 'returns error' do
           request
 
-          expect(response).to have_http_status(:unprocessable_entity)
-          expect(json_response['error']).to include('must have at most 2 decimal places')
+          expect(response).to have_http_status(:bad_request)
+          expect(json_response['error']['amount']).to include('must have at most 2 decimal places')
         end
 
         it 'does not change balance' do

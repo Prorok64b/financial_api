@@ -3,6 +3,8 @@
 module Account
   class TransferService < ApplicationService
     LIMIT = 1_000_000
+    IN_TRANSACTION = "transfer_in"
+    OUT_TRANSACTION = "transfer_out"
 
     def initialize(sender:, recipient_email:, amount:)
       @sender = sender
@@ -58,7 +60,7 @@ module Account
       sender.update!(balance: sender_new_balance)
       sender.transactions.create!(
         amount: @amount,
-        transaction_type: "transfer_out",
+        transaction_type: OUT_TRANSACTION,
         balance_after: sender_new_balance,
         counterparty: recipient
       )
@@ -66,7 +68,7 @@ module Account
       recipient.update!(balance: recipient_new_balance)
       recipient.transactions.create!(
         amount: @amount,
-        transaction_type: "transfer_in",
+        transaction_type: IN_TRANSACTION,
         balance_after: recipient_new_balance,
         counterparty: sender
       )

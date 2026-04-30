@@ -135,8 +135,8 @@ RSpec.describe 'V1::Account#transfer', type: :request do
       it 'returns error' do
         request
 
-        expect(response).to have_http_status(:unprocessable_entity)
-        expect(json_response['error']).to include('must have at most 2 decimal places')
+        expect(response).to have_http_status(:bad_request)
+        expect(json_response['error']['amount']).to include('must have at most 2 decimal places')
       end
 
       it 'does not change sender balance' do

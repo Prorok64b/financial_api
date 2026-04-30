@@ -3,6 +3,7 @@
 module Account
   class WithdrawService < ApplicationService
     LIMIT = 1_000_000
+    TRANSACTION = "withdrawal"
 
     def initialize(user:, amount:)
       @user = user
@@ -23,7 +24,7 @@ module Account
         @user.update!(balance: new_balance)
         @user.transactions.create!(
           amount: @amount,
-          transaction_type: "withdrawal",
+          transaction_type: TRANSACTION,
           balance_after: new_balance
         )
       end

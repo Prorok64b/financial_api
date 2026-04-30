@@ -39,6 +39,7 @@ gem "thruster", require: false
 
 gem "devise"
 gem "devise-jwt"
+gem "dry-validation"
 
 gem "rubocop", require: false
 
